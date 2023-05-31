@@ -1,1 +1,2 @@
 vtf_testing
+0sprite---border.png

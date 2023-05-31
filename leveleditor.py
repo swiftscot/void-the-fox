@@ -26,7 +26,6 @@ gameinfocontent = []
 sprites = []
 spritesExisting = []
 tab = 1
-neverImported = True
 
 # colours
 WHITE = (255,255,255)
@@ -89,7 +88,7 @@ while running == True:
         gameinfocontent = gameinfo.readlines()
         for counter in range(len(gameinfocontent)):
           if gameinfocontent[counter].find("sprite---") != -1:
-            sprites.append(gameinfocontent[counter][9:-1])
+            sprites.append(gameinfocontent[counter][10:-1])
       elif gameTyping == True and event.key == pygame.K_BACKSPACE:
         gameLoaded = gameLoaded[:-2]
       if newGameTyping == True:
@@ -229,12 +228,8 @@ while running == True:
         screen.blit(sprite, (counter*20,520))
     if tab == 4:
       if mouse_x > 5 and mouse_x < 165 and mouse_y > 520 and mouse_y < 540: # import sprites
-        if neverImported == True:
-          importspritestext = sublogofont.render("Import Sprites", True, LBLUE)
-        else:
-          importspritestext = sublogofont.render("Done!", True, LBLUE)
-        if mouse_1 == True and neverImported == True:
-          neverImported = False
+        importspritestext = sublogofont.render("Import Sprites", True, LBLUE)
+        if mouse_1 == True:
           gameinfo.close()
           gameinfo = open(gameLoaded + "/gameinfo.txt", "a")
           spritesExisting = os.listdir(gameLoaded + "/sprites")
@@ -250,7 +245,7 @@ while running == True:
             if counter + 1 != ogSpritesNotExisting:
               spritesNotExisting[counter+1] = spritesNotExisting[counter+1] - counter - 1
           for counter in range(len(spritesExisting)):
-            gameinfo.write("sprite---" + spritesExisting[counter] + "\n")
+            gameinfo.write(str(counter) + "sprite---" + spritesExisting[counter] + "\n")
           gameinfo.close()
           gameinfo = open(gameLoaded + "/gameinfo.txt", "r")
           gameinfocontent = gameinfo.readlines()
@@ -258,12 +253,9 @@ while running == True:
           sprites = []
           for counter in range(len(gameinfocontent)):
             if gameinfocontent[counter].find("sprite---") != -1:
-              sprites.append(gameinfocontent[counter][9:-1])
+              sprites.append(gameinfocontent[counter][10:-1])
       else:
-        if neverImported == True:
-          importspritestext = sublogofont.render("Import Sprites", True, BLUE)
-        else:
-          importspritestext = sublogofont.render("Done!", True, BLUE)
+        importspritestext = sublogofont.render("Import Sprites", True, BLUE)
       screen.blit(importspritestext, (5, 520))
 
   pygame.display.update()
