@@ -5,6 +5,7 @@ pygame.init()
 pygame.font.init()
 screen = pygame.display.set_mode((640,640))
 
+# names
 saveName = ""
 saveTyping = False
 loadName = ""
@@ -14,15 +15,18 @@ gameTyping = False
 newGame = ""
 newGameTyping = False
 
+# colours
 WHITE = (255,255,255)
 LGREY = (150,150,150)
 GREY = (50,50,50)
 BLACK = (0,0,0)
 
+# fonts
 logofont = pygame.font.SysFont("Arial", 80)
 sublogofont = pygame.font.SysFont("Arial", 20)
 normalfont = pygame.font.SysFont("Arial", 50)
 
+# texts
 logotext = logofont.render("Void the Fox", True, WHITE)
 sublogotext = sublogofont.render("Level Editor prerelease-31May23", True, WHITE)
 menunewtext = normalfont.render("New", True, WHITE)
@@ -32,9 +36,12 @@ menuquittext = normalfont.render("Quit", True, WHITE)
 menugametext = normalfont.render("Game: " + gameLoaded, True, WHITE)
 menunewgametext = normalfont.render("New Game: " + newGame, True, WHITE)
 
+# variables
 running = True
 menu = True
 clock = pygame.time.Clock()
+
+# loop
 while running == True:
   clock.tick(60)
   keys = pygame.key.get_pressed()
