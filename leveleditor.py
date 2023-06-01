@@ -25,7 +25,19 @@ tick = 0
 gameinfocontent = []
 sprites = []
 spritesExisting = []
+spritex = []
+spritey = []
+spriteid = []
+entityx = []
+entityy = []
+entitydata = []
+selectedSprite = 0
+bgs = []
+bgsExisting = []
+activeBg = ""
+activeBgName = ""
 tab = 1
+page = 1
 
 # colours
 WHITE = (255,255,255)
@@ -46,7 +58,7 @@ normalfont = pygame.font.SysFont("Arial", 50)
 
 # texts
 logotext = logofont.render("Void the Fox", True, WHITE)
-sublogotext = sublogofont.render("Level Editor prerelease-31May23", True, WHITE)
+sublogotext = sublogofont.render("Level Editor prerelease-01Jun23", True, WHITE)
 
 # loop
 while running == True:
@@ -61,7 +73,11 @@ while running == True:
   else:
     gridmouse_y = round(mouse_y/20)
   editorxytext = sublogofont.render(str(round(mouse_x/20)) + ", " + str(gridmouse_y), True, WHITE)
-
+  editorpagetext = sublogofont.render("Page: " + str(page), True, WHITE)
+  editorspritesusedtext = sublogofont.render("Sprites used: " + str(len(spritex)), True, WHITE)
+  editorentitesusedtext = sublogofont.render("Entities used: " + str(len(entityx)), True, WHITE)
+  editorbgusedtext = sublogofont.render("BG used: " + activeBgName, True, WHITE)
+  
   if tick % 5 == 0:
     if voidsprite == 0:
       voidsprite = 1
@@ -76,6 +92,10 @@ while running == True:
           menu = False
         else:
           menu = True
+      if event.key == pygame.K_LEFT:
+        page = page - 1
+      if event.key == pygame.K_RIGHT:
+        page = page + 1
       if event.key == pygame.K_PAUSE:
         if "" > 5:
           break
@@ -88,7 +108,9 @@ while running == True:
         gameinfocontent = gameinfo.readlines()
         for counter in range(len(gameinfocontent)):
           if gameinfocontent[counter].find("sprite---") != -1:
-            sprites.append(gameinfocontent[counter][10:-1])
+            sprites.append(gameinfocontent[counter][gameinfocontent[counter].find("---")+3:-1])
+          if gameinfocontent[counter].find("bg-------") != -1:
+            bgs.append(gameinfocontent[counter][gameinfocontent[counter].find("-------")+7:-1])
       elif gameTyping == True and event.key == pygame.K_BACKSPACE:
         gameLoaded = gameLoaded[:-2]
       if newGameTyping == True:
@@ -101,6 +123,7 @@ while running == True:
         os.mkdir(newGame + "/music")
         os.mkdir(newGame + "/sprites")
         os.mkdir(newGame + "/backgrounds")
+        os.mkdir(newGame + "/videos")
         gameinfo = open(newGame + "/gameinfo.txt", "x")
         gameinfo.close()
         gameinfo = open(newGame + "/gameinfo.txt", "a")
@@ -136,6 +159,9 @@ while running == True:
     if mouse_x > 20 and mouse_x < 130 and mouse_y > 250 and mouse_y < 300: # new
       if mouse_1 == True and len(gameinfocontent) > 0:
         menu = False
+        spritex = []
+        spritey = []
+        spriteid = []
       menunewtext = normalfont.render("New", True, LGREY)
     else:
       menunewtext = normalfont.render("New", True, WHITE)
@@ -191,8 +217,29 @@ while running == True:
     screen.blit(menunewgametext, (20,550))
   else:
     screen.fill(WHITE)
+    if activeBg != "":
+      screen.blit(activeBg, (0,0))
     pygame.draw.rect(screen, GREY, (0,480,640,160))
     screen.blit(voiddash[voidsprite], (480,500))
+    for counter in range(32):
+      pygame.draw.line(screen, (LGREY), (counter*20,0), (counter*20,480))
+    for counter in range(24):
+      pygame.draw.line(screen, (LGREY), (0,counter*20), (640,counter*20))
+    if mouse_y < 480 and mouse_1 == True:
+      spritex.append(math.trunc(mouse_x/20)*20)
+      spritey.append(math.trunc(mouse_y/20)*20)
+      spriteid.append(selectedSprite)
+    if mouse_y < 480 and mouse_3 == True:
+      if len(spriteid) > 0:
+        for counter in range(len(spriteid)):
+          if spritex[counter] == math.trunc(mouse_x/20)*20 and spritey[counter] == math.trunc(mouse_y/20)*20:
+            spritex.pop(counter)
+            spritey.pop(counter)
+            spriteid.pop(counter)
+            break
+    if len(spriteid) > 0:
+      for counter in range(len(spriteid)):
+        screen.blit(pygame.image.load(gameLoaded + "/sprites/" + sprites[spriteid[counter]]), (spritex[counter],spritey[counter]))
     if mouse_x > 5 and mouse_x < 70 and mouse_y > 490 and mouse_y < 510: # sprites
       editorspritestext = sublogofont.render("Sprites", True, LGREY)
       if mouse_1 == True:
@@ -218,14 +265,32 @@ while running == True:
     else:
       editorimporttext = sublogofont.render("Import", True, WHITE)
     screen.blit(editorxytext, (5, 610))
+    screen.blit(editorpagetext, (100, 610))
+    screen.blit(editorspritesusedtext, (5,580))
+    screen.blit(editorentitesusedtext, (175,580))
+    screen.blit(editorbgusedtext, (355,580))
     screen.blit(editorspritestext, (5, 490))
     screen.blit(editorentitiestext, (85, 490))
     screen.blit(editorbackgroundstext, (165, 490))
     screen.blit(editorimporttext, (285, 490))
     if tab == 1:
       for counter in range(len(sprites)):
-        sprite = pygame.image.load(gameLoaded + "/sprites/" + sprites[counter])
-        screen.blit(sprite, (counter*20,520))
+        if counter < 20 and page == 1:
+          sprite = pygame.image.load(gameLoaded + "/sprites/" + sprites[counter])
+          screen.blit(sprite, (counter*20,520))
+        elif counter < 20*page and counter >= 20*(page-1):
+          sprite = pygame.image.load(gameLoaded + "/sprites/" + sprites[counter])
+          screen.blit(sprite, (counter*20-page*200,520))
+        if mouse_x > counter*20 and mouse_x < counter*20+20 and mouse_y > 520 and mouse_y < 540 and mouse_1 == True:
+          selectedSprite = counter
+    if tab == 3:
+      for counter in range(len(bgs)):
+        bg = pygame.image.load(gameLoaded + "/backgrounds/" + bgs[counter])
+        bg = pygame.transform.scale(bg, (80,60))
+        screen.blit(bg, (counter*80,520))
+        if mouse_x > counter*80 and mouse_x < counter*80+80 and mouse_y > 520 and mouse_y < 580 and mouse_1 == True:
+          activeBg = pygame.image.load(gameLoaded + "/backgrounds/" + bgs[counter])
+          activeBgName = bgs[counter]
     if tab == 4:
       if mouse_x > 5 and mouse_x < 165 and mouse_y > 520 and mouse_y < 540: # import sprites
         importspritestext = sublogofont.render("Import Sprites", True, LBLUE)
@@ -245,7 +310,7 @@ while running == True:
             if counter + 1 != ogSpritesNotExisting:
               spritesNotExisting[counter+1] = spritesNotExisting[counter+1] - counter - 1
           for counter in range(len(spritesExisting)):
-            gameinfo.write(str(counter) + "sprite---" + spritesExisting[counter] + "\n")
+            gameinfo.write(str(counter+len(sprites)) + "sprite---" + spritesExisting[counter] + "\n")
           gameinfo.close()
           gameinfo = open(gameLoaded + "/gameinfo.txt", "r")
           gameinfocontent = gameinfo.readlines()
@@ -253,10 +318,45 @@ while running == True:
           sprites = []
           for counter in range(len(gameinfocontent)):
             if gameinfocontent[counter].find("sprite---") != -1:
-              sprites.append(gameinfocontent[counter][10:-1])
+              sprites.append(gameinfocontent[counter][gameinfocontent[counter].find("---")+3:-1])
       else:
         importspritestext = sublogofont.render("Import Sprites", True, BLUE)
+      if mouse_x > 5 and mouse_x < 205 and mouse_y > 540 and mouse_y < 560:
+        importbgtext = sublogofont.render("Import Backgrounds", True, LBLUE)
+        if mouse_1 == True:
+          gameinfo.close()
+          gameinfo = open(gameLoaded + "/gameinfo.txt", "a")
+          bgsExisting = os.listdir(gameLoaded + "/backgrounds")
+          bgsNotExisting = []
+          for counter in range(len(bgsExisting)):
+            for bgcounter in range(len(bgs)):
+              if bgsExisting[counter] == bgs[bgcounter]:
+                bgsNotExisting.append(counter)
+                break
+          ogBgsNotExisting = len(bgsNotExisting)
+          for counter in range(len(bgsNotExisting)):
+            bgsExisting.pop(bgsNotExisting[counter])
+            if counter + 1 != ogBgsNotExisting:
+              bgsNotExisting[counter+1] = bgsNotExisting[counter+1] - counter - 1
+          for counter in range(len(bgsExisting)):
+            gameinfo.write(str(counter) + "bg-------" + bgsExisting[counter] + "\n")
+          gameinfo.close()
+          gameinfo = open(gameLoaded + "/gameinfo.txt", "r")
+          gameinfocontent = gameinfo.readlines()
+          gameinfo.close()
+          bgs = []
+          for counter in range(len(gameinfocontent)):
+            if gameinfocontent[counter].find("bg-------") != -1:
+              bgs.append(gameinfocontent[counter][gameinfocontent[counter].find("-------")+7:-1])
+      else:
+        importbgtext = sublogofont.render("Import Backgrounds", True, BLUE)
+      if mouse_x > 5 and mouse_x < 145 and mouse_y > 560 and mouse_y < 580:
+        importmusictext = sublogofont.render("Import Music", True, LBLUE)
+      else:
+        importmusictext = sublogofont.render("Import Music", True, BLUE)
       screen.blit(importspritestext, (5, 520))
+      screen.blit(importbgtext, (5, 540))
+      screen.blit(importmusictext, (5, 560))
 
   pygame.display.update()
 pygame.quit()

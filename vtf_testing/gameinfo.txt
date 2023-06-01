@@ -1,2 +1,27 @@
 vtf_testing
+0bg-------test.png
+0bg-------test2.png
 0sprite---border.png
+1sprite---whiteborder.png
+2sprite---border (copy).png
+3sprite---border (copy) 1.png
+4sprite---border (copy) 2.png
+5sprite---border (copy) 3.png
+6sprite---border (copy) 4.png
+7sprite---border (copy) 5.png
+8sprite---border (copy) 6.png
+9sprite---border (copy) 7.png
+10sprite---border (copy) 8.png
+11sprite---border (copy) 9.png
+12sprite---border (copy) 10.png
+13sprite---whiteborder (copy) 1.png
+14sprite---whiteborder (copy) 2.png
+15sprite---whiteborder (copy) 3.png
+16sprite---whiteborder (copy) 4.png
+17sprite---whiteborder (copy) 5.png
+18sprite---whiteborder (copy) 6.png
+19sprite---whiteborder (copy) 7.png
+20sprite---whiteborder (copy) 8.png
+21sprite---whiteborder (copy) 9.png
+22sprite---whiteborder (copy) 10.png
+23sprite---whiteborder (copy).png
