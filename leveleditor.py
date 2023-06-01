@@ -31,7 +31,7 @@ spriteid = []
 entityx = []
 entityy = []
 entitydata = []
-selectedSprite = 0
+selectedSprite = -1
 bgs = []
 bgsExisting = []
 activeBg = ""
@@ -106,6 +106,8 @@ while running == True:
         gameLoaded = gameLoaded[:-1]
         gameinfo = open(gameLoaded + "/gameinfo.txt", "r")
         gameinfocontent = gameinfo.readlines()
+        sprites = []
+        bgs = []
         for counter in range(len(gameinfocontent)):
           if gameinfocontent[counter].find("sprite---") != -1:
             sprites.append(gameinfocontent[counter][gameinfocontent[counter].find("---")+3:-1])
@@ -132,6 +134,8 @@ while running == True:
         gameinfo = open(newGame + "/gameinfo.txt", "r")
         gameinfocontent = gameinfo.readlines()
         gameLoaded = newGame
+        sprites = []
+        bgs = []
       elif newGameTyping == True and event.key == pygame.K_BACKSPACE:
         newGame = newGame[:-2]
       if saveTyping == True:
@@ -153,6 +157,10 @@ while running == True:
       elif loadTyping == True and event.key == pygame.K_BACKSPACE:
         loadName = loadName[:-2]
 
+  if page < 1:
+    page = 1
+  elif page > math.trunc(len(sprites)/20)+1 or page > math.trunc(len(bgs)/8)+1:
+    page = page - 1
   if menu == True:
     screen.fill(GREY)
     screen.blit(voiddash[voidsprite], (480,500))
@@ -222,13 +230,18 @@ while running == True:
     pygame.draw.rect(screen, GREY, (0,480,640,160))
     screen.blit(voiddash[voidsprite], (480,500))
     for counter in range(32):
-      pygame.draw.line(screen, (LGREY), (counter*20,0), (counter*20,480))
+      pygame.draw.line(screen, (LGREY), (counter*20,0), (counter*20,479))
     for counter in range(24):
       pygame.draw.line(screen, (LGREY), (0,counter*20), (640,counter*20))
-    if mouse_y < 480 and mouse_1 == True:
-      spritex.append(math.trunc(mouse_x/20)*20)
-      spritey.append(math.trunc(mouse_y/20)*20)
-      spriteid.append(selectedSprite)
+    if mouse_y < 480 and mouse_1 == True and selectedSprite != -1:
+      spriteNotOkay = False
+      for counter in range(len(spritex)):
+        if spritex[counter] == math.trunc(mouse_x/20)*20 and spritey[counter] == math.trunc(mouse_y/20)*20:
+          spriteNotOkay = True
+      if spriteNotOkay == False:
+        spritex.append(math.trunc(mouse_x/20)*20)
+        spritey.append(math.trunc(mouse_y/20)*20)
+        spriteid.append(selectedSprite)
     if mouse_y < 480 and mouse_3 == True:
       if len(spriteid) > 0:
         for counter in range(len(spriteid)):
@@ -285,9 +298,14 @@ while running == True:
           selectedSprite = counter
     if tab == 3:
       for counter in range(len(bgs)):
-        bg = pygame.image.load(gameLoaded + "/backgrounds/" + bgs[counter])
-        bg = pygame.transform.scale(bg, (80,60))
-        screen.blit(bg, (counter*80,520))
+        if counter < 6 and page == 1:
+          bg = pygame.image.load(gameLoaded + "/backgrounds/" + bgs[counter])
+          bg = pygame.transform.scale(bg, (80,60))
+          screen.blit(bg, (counter*80,520))
+        elif counter < 6*page and counter >= 6*(page-1):
+          bg = pygame.image.load(gameLoaded + "/backgrounds/" + bgs[counter])
+          bg = pygame.transform.scale(bg, (80,60))
+          screen.blit(bg, (counter*80-page*480,520))
         if mouse_x > counter*80 and mouse_x < counter*80+80 and mouse_y > 520 and mouse_y < 580 and mouse_1 == True:
           activeBg = pygame.image.load(gameLoaded + "/backgrounds/" + bgs[counter])
           activeBgName = bgs[counter]
