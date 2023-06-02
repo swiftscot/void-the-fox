@@ -357,7 +357,7 @@ while running == True:
             if counter + 1 != ogBgsNotExisting:
               bgsNotExisting[counter+1] = bgsNotExisting[counter+1] - counter - 1
           for counter in range(len(bgsExisting)):
-            gameinfo.write(str(counter) + "bg-------" + bgsExisting[counter] + "\n")
+            gameinfo.write(str(counter+len(bgs) + "bg-------" + bgsExisting[counter] + "\n"))
           gameinfo.close()
           gameinfo = open(gameLoaded + "/gameinfo.txt", "r")
           gameinfocontent = gameinfo.readlines()

@@ -1,6 +1,6 @@
 vtf_testing
 0bg-------test.png
-0bg-------test2.png
+1bg-------test2.png
 0sprite---colour00.png
 1sprite---colour01.png
 2sprite---colour02.png
