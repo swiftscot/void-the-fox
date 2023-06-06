@@ -36,8 +36,11 @@ bgs = []
 bgsExisting = []
 activeBg = ""
 activeBgName = ""
+activeBgId = -1
 tab = 1
 page = 1
+camerax = 0
+cameray = 0
 
 # colours
 WHITE = (255,255,255)
@@ -58,7 +61,7 @@ normalfont = pygame.font.SysFont("Arial", 50)
 
 # texts
 logotext = logofont.render("Void the Fox", True, WHITE)
-sublogotext = sublogofont.render("Level Editor prerelease-01Jun23", True, WHITE)
+sublogotext = sublogofont.render("Level Editor prerelease-06Jun23", True, WHITE)
 
 # loop
 while running == True:
@@ -68,15 +71,12 @@ while running == True:
   mouse_x,mouse_y = pygame.mouse.get_pos()
   mouse_1,mouse_2,mouse_3 = pygame.mouse.get_pressed(num_buttons=3)
   pygame.display.set_caption("Void the Fox - Level Editor (loaded game: " + gameLoaded + ") (loaded level: " + currentLevel +") (runtime: " + str(math.trunc(tick/3600)) + " minutes)")
-  if round(mouse_y/20) > 24:
-    gridmouse_y = 24
-  else:
-    gridmouse_y = round(mouse_y/20)
-  editorxytext = sublogofont.render(str(round(mouse_x/20)) + ", " + str(gridmouse_y), True, WHITE)
+  editorxytext = sublogofont.render(str(int(round(mouse_x/20) + round(camerax/20)/-1)) + ", " + str(round(mouse_y/20) + round(cameray/20)), True, WHITE)
   editorpagetext = sublogofont.render("Page: " + str(page), True, WHITE)
   editorspritesusedtext = sublogofont.render("Sprites used: " + str(len(spritex)), True, WHITE)
   editorentitesusedtext = sublogofont.render("Entities used: " + str(len(entityx)), True, WHITE)
   editorbgusedtext = sublogofont.render("BG used: " + activeBgName, True, WHITE)
+  editorselectedspritetext = sublogofont.render("Sprite/entity selected: ", True, WHITE)
   
   if tick % 5 == 0:
     if voidsprite == 0:
@@ -126,6 +126,7 @@ while running == True:
         os.mkdir(newGame + "/sprites")
         os.mkdir(newGame + "/backgrounds")
         os.mkdir(newGame + "/videos")
+        os.mkdir(newGame + "/sfx")
         gameinfo = open(newGame + "/gameinfo.txt", "x")
         gameinfo.close()
         gameinfo = open(newGame + "/gameinfo.txt", "a")
@@ -145,6 +146,15 @@ while running == True:
         saveName = saveName[:-1]
         menu = False
         currentLevel = saveName
+        if os.path.exists(gameLoaded + "/levels/" + saveName + ".vtflevel"):
+          os.remove(gameLoaded + "/levels/" + saveName + ".vtflevel")
+        saveFile = open(gameLoaded + "/levels/" + saveName + ".vtflevel", "x")
+        saveFile.close()
+        saveFile = open(gameLoaded + "/levels/" + saveName + ".vtflevel", "a")
+        saveFile.write("bg" + str(activeBgId) + "id\n")
+        for counter in range(len(spritex)):
+          saveFile.write("sprite" + str(spriteid[counter]) + "id" + str(spritex[counter]) + "x" + str(spritey[counter]) + "y\n")
+        saveFile.close()
       elif saveTyping == True and event.key == pygame.K_BACKSPACE:
         saveName = saveName[:-2]
       if loadTyping == True:
@@ -154,8 +164,33 @@ while running == True:
         loadName = loadName[:-1]
         menu = False
         currentLevel = loadName
+        loadFile = open(gameLoaded + "/levels/" + loadName + ".vtflevel", "r")
+        loadFileContents = loadFile.readlines()
+        if loadFileContents[0] == "bg-1id":
+          print("no background")
+        else:
+          activeBg = pygame.image.load(gameLoaded + "/backgrounds/" + bgs[int(loadFileContents[0][2:loadFileContents[0].find("id")])])
+          activeBgName = bgs[int(loadFileContents[0][2:loadFileContents[0].find("id")])]
+          activeBgId = int(loadFileContents[0][2:loadFileContents[0].find("id")])
+          spriteid = []
+          spritex = []
+          spritey = []
+        for counter in range(len(loadFileContents)-1):
+          if loadFileContents[counter].find("sprite") != -1:
+            spriteid.append(int(loadFileContents[counter][6:loadFileContents[counter].find("id")]))
+            spritex.append(int(loadFileContents[counter][loadFileContents[counter].find("id")+2:loadFileContents[counter].find("x")]))
+            spritey.append(int(loadFileContents[counter][loadFileContents[counter].find("x")+1:loadFileContents[counter].find("y")]))
       elif loadTyping == True and event.key == pygame.K_BACKSPACE:
         loadName = loadName[:-2]
+
+  if keys[pygame.K_RIGHT]:
+    camerax = camerax - 20
+  if keys[pygame.K_LEFT]:
+    camerax = camerax + 20
+  if keys[pygame.K_UP]:
+    cameray = cameray + 20
+  if keys[pygame.K_DOWN]:
+    cameray = cameray - 20
 
   if page < 1:
     page = 1
@@ -226,7 +261,10 @@ while running == True:
   else:
     screen.fill(WHITE)
     if activeBg != "":
-      screen.blit(activeBg, (0,0))
+      screen.blit(activeBg, (0 + math.trunc(camerax/20)*20,0 + math.trunc(cameray/20)*20))
+    if len(spriteid) > 0:
+      for counter in range(len(spriteid)):
+        screen.blit(pygame.image.load(gameLoaded + "/sprites/" + sprites[spriteid[counter]]), (spritex[counter] + math.trunc(camerax/20)*20,spritey[counter] + math.trunc(cameray/20)*20))
     pygame.draw.rect(screen, GREY, (0,480,640,160))
     screen.blit(voiddash[voidsprite], (480,500))
     for counter in range(32):
@@ -236,23 +274,20 @@ while running == True:
     if mouse_y < 480 and mouse_1 == True and selectedSprite != -1:
       spriteNotOkay = False
       for counter in range(len(spritex)):
-        if spritex[counter] == math.trunc(mouse_x/20)*20 and spritey[counter] == math.trunc(mouse_y/20)*20:
+        if spritex[counter] == math.trunc(mouse_x/20)*20 - math.trunc(camerax/20)*20 and spritey[counter] == math.trunc(mouse_y/20)*20 - math.trunc(cameray/20)*20:
           spriteNotOkay = True
       if spriteNotOkay == False:
-        spritex.append(math.trunc(mouse_x/20)*20)
-        spritey.append(math.trunc(mouse_y/20)*20)
+        spritex.append(math.trunc(mouse_x/20)*20 - math.trunc(camerax/20)*20)
+        spritey.append(math.trunc(mouse_y/20)*20 - math.trunc(cameray/20)*20)
         spriteid.append(selectedSprite)
     if mouse_y < 480 and mouse_3 == True:
       if len(spriteid) > 0:
         for counter in range(len(spriteid)):
-          if spritex[counter] == math.trunc(mouse_x/20)*20 and spritey[counter] == math.trunc(mouse_y/20)*20:
+          if spritex[counter] == math.trunc(mouse_x/20)*20 - math.trunc(camerax/20)*20 and spritey[counter] == math.trunc(mouse_y/20)*20 - math.trunc(cameray/20)*20:
             spritex.pop(counter)
             spritey.pop(counter)
             spriteid.pop(counter)
             break
-    if len(spriteid) > 0:
-      for counter in range(len(spriteid)):
-        screen.blit(pygame.image.load(gameLoaded + "/sprites/" + sprites[spriteid[counter]]), (spritex[counter],spritey[counter]))
     if mouse_x > 5 and mouse_x < 70 and mouse_y > 490 and mouse_y < 510: # sprites
       editorspritestext = sublogofont.render("Sprites", True, LGREY)
       if mouse_1 == True:
@@ -279,6 +314,7 @@ while running == True:
       editorimporttext = sublogofont.render("Import", True, WHITE)
     screen.blit(editorxytext, (5, 610))
     screen.blit(editorpagetext, (100, 610))
+    screen.blit(editorselectedspritetext, (200, 610))
     screen.blit(editorspritesusedtext, (5,580))
     screen.blit(editorentitesusedtext, (175,580))
     screen.blit(editorbgusedtext, (355,580))
@@ -286,6 +322,9 @@ while running == True:
     screen.blit(editorentitiestext, (85, 490))
     screen.blit(editorbackgroundstext, (165, 490))
     screen.blit(editorimporttext, (285, 490))
+    if selectedSprite != -1:
+      selectedSpriteImg = pygame.image.load(gameLoaded + "/sprites/" + sprites[selectedSprite])
+      screen.blit(selectedSpriteImg, (425, 612))
     if tab == 1:
       for counter in range(len(sprites)):
         if counter < 20 and page == 1:
@@ -309,6 +348,7 @@ while running == True:
         if mouse_x > counter*80 and mouse_x < counter*80+80 and mouse_y > 520 and mouse_y < 580 and mouse_1 == True:
           activeBg = pygame.image.load(gameLoaded + "/backgrounds/" + bgs[counter])
           activeBgName = bgs[counter]
+          activeBgId = counter
     if tab == 4:
       if mouse_x > 5 and mouse_x < 165 and mouse_y > 520 and mouse_y < 540: # import sprites
         importspritestext = sublogofont.render("Import Sprites", True, LBLUE)
