@@ -1,6 +1,9 @@
+# this program is a corpse party, and i am so sorry
+
 import pygame
 import os
 import math
+import getpass
 
 pygame.init()
 pygame.font.init()
@@ -16,10 +19,16 @@ gameTyping = False
 newGame = ""
 newGameTyping = False
 currentLevel = ""
+exNameTyping = False
+exDevTyping = False
+chapStartTyping = False
+chapNameTyping = False
 
 # variables
+holdCooldown = False
 running = True
 menu = True
+gamemanagermenu = False
 clock = pygame.time.Clock()
 tick = 0 
 gameinfocontent = []
@@ -43,15 +52,15 @@ tab = 1
 page = 1
 camerax = 0
 cameray = 0
+chaptername = ""
+chapterstart = ""
+chapters = 0
 
 # colours
 WHITE = (255,255,255)
 LGREY = (150,150,150)
 GREY = (50,50,50)
-BLUE = (51,51,255)
-LBLUE = (102,102,255)
-BLACK = (0,0,0)
-V01 = (255,0,0)
+V01 = (255,51,51)
 
 # images
 voiddash = [pygame.image.load("vtf_shared/leveleditor_sprites/voiddash.png"),pygame.image.load("vtf_shared/leveleditor_sprites/voiddash2.png")]
@@ -80,6 +89,7 @@ while running == True:
   editorentitesusedtext = sublogofont.render("Entities used: " + str(len(entityx)), True, WHITE)
   editorbgusedtext = sublogofont.render("BG used: " + activeBgName, True, WHITE)
   editorselectedspritetext = sublogofont.render("Sprite/entity selected: ", True, WHITE)
+  gamemanagertext = sublogofont.render("Managing " + gameLoaded, True, WHITE)
   
   if tick % 5 == 0:
     if voidsprite == 0:
@@ -95,6 +105,7 @@ while running == True:
           menu = False
         else:
           menu = True
+          gamemanagermenu = False
       if event.key == pygame.K_COMMA:
         page = page - 1
       if event.key == pygame.K_PERIOD:
@@ -102,6 +113,12 @@ while running == True:
       if event.key == pygame.K_PAUSE:
         if "" > 5:
           break
+      if gameLoaded != "" and event.key == pygame.K_F1:
+        if gamemanagermenu == False:
+          gamemanagermenu = True
+          menu = False
+        else:
+          gamemanagermenu = False
       if gameTyping == True:
         gameLoaded = gameLoaded + event.unicode
       if gameTyping == True and event.key == pygame.K_RETURN:
@@ -116,6 +133,10 @@ while running == True:
             sprites.append(gameinfocontent[counter][gameinfocontent[counter].find("---")+3:-1])
           if gameinfocontent[counter].find("bg-------") != -1:
             bgs.append(gameinfocontent[counter][gameinfocontent[counter].find("-------")+7:-1])
+        externalName = gameinfocontent[0][:-1]
+        externalDev = gameinfocontent[1][:-1]
+        chapters = 0
+            
       elif gameTyping == True and event.key == pygame.K_BACKSPACE:
         gameLoaded = gameLoaded[:-2]
       if newGameTyping == True:
@@ -133,13 +154,15 @@ while running == True:
         gameinfo = open(newGame + "/gameinfo.txt", "x")
         gameinfo.close()
         gameinfo = open(newGame + "/gameinfo.txt", "a")
-        gameinfo.write(newGame + "\n")
+        gameinfo.write(newGame + "\n" + getpass.getuser() + "\n")
         gameinfo.close()
         gameinfo = open(newGame + "/gameinfo.txt", "r")
         gameinfocontent = gameinfo.readlines()
         gameLoaded = newGame
         sprites = []
         bgs = []
+        externalName = gameinfocontent[0][:-1]
+        externalDev = gameinfocontent[1][:-1]
       elif newGameTyping == True and event.key == pygame.K_BACKSPACE:
         newGame = newGame[:-2]
       if saveTyping == True:
@@ -194,6 +217,54 @@ while running == True:
             entityy.append(int(loadFileContents[counter][loadFileContents[counter].find("xc")+2:loadFileContents[counter].find("yc")]))
       elif loadTyping == True and event.key == pygame.K_BACKSPACE:
         loadName = loadName[:-2]
+      if exNameTyping == True:
+        externalName += event.unicode
+      if exNameTyping == True and event.key == pygame.K_BACKSPACE:
+        externalName = externalName[:-2]
+      if exNameTyping == True and event.key == pygame.K_RETURN:
+        exNameTyping = False
+        externalName = externalName[:-1]
+        os.remove(gameLoaded + "/gameinfo.txt")
+        loadFile = open(gameLoaded + "/gameinfo.txt", "x")
+        loadFile.close()
+        loadFile = open(gameLoaded + "/gameinfo.txt", "a")
+        loadFile.write(externalName + "\n" + externalDev + "\n")
+        for counter in range(len(gameinfocontent)-3):
+          loadFile.write(gameinfocontent[counter+3])
+        loadFile.close()
+      if exDevTyping == True:
+        externalDev += event.unicode
+      if exDevTyping == True and event.key == pygame.K_BACKSPACE:
+        externalDev = externalDev[:-2]
+      if exDevTyping == True and event.key == pygame.K_RETURN:
+        exDevTyping = False
+        externalDev = externalDev[:-1]
+        os.remove(gameLoaded + "/gameinfo.txt")
+        loadFile = open(gameLoaded + "/gameinfo.txt", "x")
+        loadFile.close()
+        loadFile = open(gameLoaded + "/gameinfo.txt", "a")
+        loadFile.write(externalName + "\n" + externalDev + "\n")
+        for counter in range(len(gameinfocontent)-3):
+          loadFile.write(gameinfocontent[counter+3])
+        loadFile.close()
+      if chapNameTyping == True:
+        chaptername += event.unicode
+      if chapNameTyping == True and event.key == pygame.K_BACKSPACE:
+        chaptername = chaptername[:-2]
+      if chapNameTyping == True and event.key == pygame.K_RETURN:
+        chapNameTyping = False
+        chaptername = chaptername[:-1]
+      if chapStartTyping == True:
+        chapterstart += event.unicode
+      if chapStartTyping == True and event.key == pygame.K_BACKSPACE:
+        chapterstart = chapterstart[:-2]
+      if chapStartTyping == True and event.key == pygame.K_RETURN:
+        chapStartTyping = False
+        chapterstart = chapterstart[:-1]
+
+  if chapters != 0:
+    chapterFile = open(gameLoaded + "/chapter" + str(chapters) + ".txt", "w")
+    chapterFile.write(chaptername + "\n" + chapterstart + "\n")
 
   if keys[pygame.K_RIGHT]:
     camerax = camerax - 20
@@ -204,6 +275,9 @@ while running == True:
   if keys[pygame.K_DOWN]:
     cameray = cameray - 20
 
+  if holdCooldown == True and mouse1 == False and mouse3 == False:
+    holdCooldown = False
+    
   if page < 1:
     page = 1
   elif page > math.trunc(len(sprites)/20)+1 or page > math.trunc(len(bgs)/8)+1:
@@ -276,6 +350,72 @@ while running == True:
     screen.blit(menuquittext, (20,400))
     screen.blit(menugametext, (20,500))
     screen.blit(menunewgametext, (20,550))
+  elif gamemanagermenu == True:
+    if mousex > 10 and mousex < 120 and mousey > 50 and mousey < 70:
+      gamemanagerexname = sublogofont.render("Game alias: " + externalName, True, LGREY)
+      if mouse1 == True:
+        exNameTyping = True
+        exDevTyping = False
+    else:
+      gamemanagerexname = sublogofont.render("Game alias: " + externalName, True, WHITE)
+    if mousex > 10 and mousex < 170 and mousey > 70 and mousey < 90:
+      gamemanagerexdev = sublogofont.render("Game developer: " + externalDev, True, LGREY)
+      if mouse1 == True:
+        exNameTyping = False
+        exDevTyping = True
+    else:
+      gamemanagerexdev = sublogofont.render("Game developer: " + externalDev, True, WHITE)
+    if mousex > 10 and mousex < 200 and mousey > 110 and mousey < 130:
+      gamemanagerchap = sublogofont.render("Modifying chapter: " + str(chapters), True, LGREY)
+      if mouse1 == True and holdCooldown == False:
+        holdCooldown = True
+        chapters = int(chapters) + 1
+        if os.path.exists(gameLoaded + "/chapter" + str(chapters) + ".txt"):
+          chapterFile = open(gameLoaded + "/chapter" + str(chapters) + ".txt", "r")
+          chapterFileContent = chapterFile.readlines()
+          chapterFile.close()
+          chaptername = chapterFileContent[0][:-1]
+          chapterstart = chapterFileContent[1][:-1]
+        else:
+          chapterFile = open(gameLoaded + "/chapter" + str(chapters) + ".txt", "x")
+          chapterFile.close()
+          chapterFile = open(gameLoaded + "/chapter" + str(chapters) + ".txt", "a")
+          chapterFile.write("")
+          chapterFile.write("")
+          chaptername = ""
+          chapterstart = ""
+      elif mouse3 == True and holdCooldown == False:
+        holdCooldown = True
+        if chapters >= 2:
+          chapters = int(chapters) - 1
+    else:
+      gamemanagerchap = sublogofont.render("Modifying chapter: " + str(chapters), True, WHITE)
+    if mousex > 10 and mousex < 150 and mousey > 130 and mousey < 150:
+      gamemanagerchapname = sublogofont.render("Chapter name: " + chaptername, True, LGREY)
+      if mouse1 == True:
+        chapNameTyping = True
+        chapStartTyping = False
+        exNameTyping = False
+        exDevTyping = False
+    else:
+      gamemanagerchapname = sublogofont.render("Chapter name: " + chaptername, True, WHITE)
+    if mousex > 10 and mousex < 200 and mousey > 150 and mousey < 170:
+      gamemanagerchapstart = sublogofont.render("Chapter start level: " + chapterstart, True, LGREY)
+      if mouse1 == True:
+        chapNameTyping = False
+        chapStartTyping = True
+        exNameTyping = False
+        exDevTyping = False
+    else:
+      gamemanagerchapstart = sublogofont.render("Chapter start level: " + chapterstart, True, WHITE)
+    screen.fill(GREY)
+    screen.blit(gamemanagertext, (10,10))
+    screen.blit(gamemanagerexname, (10, 50))
+    screen.blit(gamemanagerexdev, (10, 70))
+    screen.blit(gamemanagerchap, (10, 110))
+    screen.blit(gamemanagerchapname, (10,130))
+    screen.blit(gamemanagerchapstart, (10,150))
+    screen.blit(voiddash[voidsprite], (480,500))
   else:
     screen.fill(WHITE)
     if activeBg != "":
@@ -283,11 +423,12 @@ while running == True:
     if len(entitydata) > 0:
       for counter in range(len(entitydata)):
         screen.blit(pygame.image.load("vtf_shared/leveleditor_entities/" + entities[entitydata[counter]]), (entityx[counter] + math.trunc(camerax/20)*20,entityy[counter] + math.trunc(cameray/20)*20))
-    pygame.draw.rect(screen, GREY, (0,480,640,160))
+    
     screen.blit(voiddash[voidsprite], (480,500))
     if len(spriteid) > 0:
       for counter in range(len(spriteid)):
         screen.blit(pygame.image.load(gameLoaded + "/sprites/" + sprites[spriteid[counter]]), (spritex[counter] + math.trunc(camerax/20)*20,spritey[counter] + math.trunc(cameray/20)*20))
+    pygame.draw.rect(screen, GREY, (0,480,640,160))
     for counter in range(32):
       pygame.draw.line(screen, (LGREY), (counter*20,0), (counter*20,479))
     for counter in range(24):
@@ -351,15 +492,39 @@ while running == True:
     if mousex > 285 and mousex < 340 and mousey > 490 and mousey < 510: # import
       editorimporttext = sublogofont.render("Import", True, LGREY)
       if mouse1 == True:
-        tab = 4
+        gameinfo.close()
+        gameinfo = open(gameLoaded + "/gameinfo.txt", "a")
+        spritesExisting = os.listdir(gameLoaded + "/sprites")
+        bgsExisting = os.listdir(gameLoaded + "/backgrounds")
+        os.remove(gameLoaded + "/gameinfo.txt")
+        gameinfo = open(gameLoaded + "/gameinfo.txt", "x")
+        gameinfo.close()
+        gameinfo = open(gameLoaded + "/gameinfo.txt", "a")
+        for counter in range(3+int(chapters)):
+          gameinfo.write(gameinfocontent[counter])
+        for counter in range(len(spritesExisting)):
+          gameinfo.write(str(counter) + "sprite---" + spritesExisting[counter] + "\n")
+        for counter in range(len(bgsExisting)):
+          gameinfo.write(str(counter) + "bg-------" + bgsExisting[counter] + "\n")
+        gameinfo.close()
+        gameinfo = open(gameLoaded + "/gameinfo.txt", "r")
+        gameinfocontent = gameinfo.readlines()
+        gameinfo.close()
+        sprites = []
+        bgs = []
+        for counter in range(len(gameinfocontent)):
+          if gameinfocontent[counter].find("sprite---") != -1:
+            sprites.append(gameinfocontent[counter][gameinfocontent[counter].find("---")+3:-1])     
+          if gameinfocontent[counter].find("bg-------") != -1:
+            bgs.append(gameinfocontent[counter][gameinfocontent[counter].find("-------")+7:-1])
     else:
       editorimporttext = sublogofont.render("Import", True, WHITE)
     screen.blit(editorxytext, (5, 610))
     screen.blit(editorpagetext, (100, 610))
     screen.blit(editorselectedspritetext, (200, 610))
     screen.blit(editorspritesusedtext, (5,580))
-    screen.blit(editorentitesusedtext, (175,580))
-    screen.blit(editorbgusedtext, (355,580))
+    screen.blit(editorentitesusedtext, (200,580))
+    screen.blit(editorbgusedtext, (400,580))
     screen.blit(editorspritestext, (5, 490))
     screen.blit(editorentitiestext, (85, 490))
     screen.blit(editorbackgroundstext, (165, 490))
@@ -401,72 +566,5 @@ while running == True:
           activeBg = pygame.image.load(gameLoaded + "/backgrounds/" + bgs[counter])
           activeBgName = bgs[counter]
           activeBgId = counter
-    if tab == 4:
-      if mousex > 5 and mousex < 165 and mousey > 520 and mousey < 540: # import sprites
-        importspritestext = sublogofont.render("Import Sprites", True, LBLUE)
-        if mouse1 == True:
-          gameinfo.close()
-          gameinfo = open(gameLoaded + "/gameinfo.txt", "a")
-          spritesExisting = os.listdir(gameLoaded + "/sprites")
-          spritesNotExisting = []
-          for counter in range(len(spritesExisting)):
-            for spritescounter in range(len(sprites)):
-              if spritesExisting[counter] == sprites[spritescounter]:
-                spritesNotExisting.append(counter)
-                break
-          ogSpritesNotExisting = len(spritesNotExisting)
-          for counter in range(len(spritesNotExisting)):
-            spritesExisting.pop(spritesNotExisting[counter])
-            if counter + 1 != ogSpritesNotExisting:
-              spritesNotExisting[counter+1] = spritesNotExisting[counter+1] - counter - 1
-          for counter in range(len(spritesExisting)):
-            gameinfo.write(str(counter+len(sprites)) + "sprite---" + spritesExisting[counter] + "\n")
-          gameinfo.close()
-          gameinfo = open(gameLoaded + "/gameinfo.txt", "r")
-          gameinfocontent = gameinfo.readlines()
-          gameinfo.close()
-          sprites = []
-          for counter in range(len(gameinfocontent)):
-            if gameinfocontent[counter].find("sprite---") != -1:
-              sprites.append(gameinfocontent[counter][gameinfocontent[counter].find("---")+3:-1])
-      else:
-        importspritestext = sublogofont.render("Import Sprites", True, BLUE)
-      if mousex > 5 and mousex < 205 and mousey > 540 and mousey < 560:
-        importbgtext = sublogofont.render("Import Backgrounds", True, LBLUE)
-        if mouse1 == True:
-          gameinfo.close()
-          gameinfo = open(gameLoaded + "/gameinfo.txt", "a")
-          bgsExisting = os.listdir(gameLoaded + "/backgrounds")
-          bgsNotExisting = []
-          for counter in range(len(bgsExisting)):
-            for bgcounter in range(len(bgs)):
-              if bgsExisting[counter] == bgs[bgcounter]:
-                bgsNotExisting.append(counter)
-                break
-          ogBgsNotExisting = len(bgsNotExisting)
-          for counter in range(len(bgsNotExisting)):
-            bgsExisting.pop(bgsNotExisting[counter])
-            if counter + 1 != ogBgsNotExisting:
-              bgsNotExisting[counter+1] = bgsNotExisting[counter+1] - counter - 1
-          for counter in range(len(bgsExisting)):
-            gameinfo.write(str(counter+len(bgs) + "bg-------" + bgsExisting[counter] + "\n"))
-          gameinfo.close()
-          gameinfo = open(gameLoaded + "/gameinfo.txt", "r")
-          gameinfocontent = gameinfo.readlines()
-          gameinfo.close()
-          bgs = []
-          for counter in range(len(gameinfocontent)):
-            if gameinfocontent[counter].find("bg-------") != -1:
-              bgs.append(gameinfocontent[counter][gameinfocontent[counter].find("-------")+7:-1])
-      else:
-        importbgtext = sublogofont.render("Import Backgrounds", True, BLUE)
-      if mousex > 5 and mousex < 145 and mousey > 560 and mousey < 580:
-        importmusictext = sublogofont.render("Import Media", True, LBLUE)
-      else:
-        importmusictext = sublogofont.render("Import Media", True, BLUE)
-      screen.blit(importspritestext, (5, 520))
-      screen.blit(importbgtext, (5, 540))
-      screen.blit(importmusictext, (5, 560))
-
   pygame.display.update()
 pygame.quit()

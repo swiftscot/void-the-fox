@@ -1,6 +1,5 @@
-vtf_testing
-0bg-------test.png
-1bg-------test2.png
+Void the Fox Testing
+swiftscot
 0sprite---colour00.png
 1sprite---colour01.png
 2sprite---colour02.png
@@ -13,3 +12,5 @@ vtf_testing
 9sprite---colour09.png
 10sprite---colour10.png
 11sprite---colour11.png
+0bg-------test.png
+1bg-------test2.png
