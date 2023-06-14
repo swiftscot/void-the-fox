@@ -90,12 +90,16 @@ while running: # This is the main loop
       print("i'll do this later")
       startup = False
       mainmenu = True
+      startingUp = True
     else:
       screen.blit(pygame.image.load("vtf_shared/splash.png"), (0,0))
       startup = False
       mainmenu = True
+      startingUp = True
   elif mainmenu == True:
-    pygame.time.delay(1000)
+    if startingUp == True:
+      pygame.time.delay(1000)
+    startingUp = False
     screen.fill(GREY)
     screen.blit(bigfont.render(gameSelectedName, True, WHITE), (10,10))
     screen.blit(subfont.render("by " + gameSelectedDev, True, WHITE), (10,60))
