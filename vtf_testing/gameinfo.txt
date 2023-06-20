@@ -1,6 +1,7 @@
 Void the Fox Testing
 swiftscot
 0sprite---colour00.png
+0sprite---colour00.png
 1sprite---colour01.png
 2sprite---colour02.png
 3sprite---colour03.png

@@ -424,7 +424,7 @@ while running == True:
       for counter in range(len(entitydata)):
         screen.blit(pygame.image.load("vtf_shared/leveleditor_entities/" + entities[entitydata[counter]]), (entityx[counter] + math.trunc(camerax/20)*20,entityy[counter] + math.trunc(cameray/20)*20))
     
-    screen.blit(voiddash[voidsprite], (480,500))
+    
     if len(spriteid) > 0:
       for counter in range(len(spriteid)):
         screen.blit(pygame.image.load(gameLoaded + "/sprites/" + sprites[spriteid[counter]]), (spritex[counter] + math.trunc(camerax/20)*20,spritey[counter] + math.trunc(cameray/20)*20))
@@ -566,5 +566,6 @@ while running == True:
           activeBg = pygame.image.load(gameLoaded + "/backgrounds/" + bgs[counter])
           activeBgName = bgs[counter]
           activeBgId = counter
+    screen.blit(voiddash[voidsprite], (480,500))
   pygame.display.update()
 pygame.quit()

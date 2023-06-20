@@ -31,13 +31,23 @@ gameListInternal = [] # This is an array that will hold all found Void Engine ga
 gameListDev = []
 gameSelected = "" # The selected game from the game list
 clock = pygame.time.Clock()
-optick = 0
+chapterSelectionScreen = False
+chapterFileContents = ""
 
 # Functions
 def loading(BLACK,WHITE):
   screen.fill(BLACK)
   screen.blit(bigfont.render("NOW LOADING", True, WHITE), (10,10))
 
+def loadLevel(level, gameInfoContents):
+  global mainmenu
+  global chapterSelectionScreen
+  mainmenu = False
+  chapterSelectionScreen = False
+  loading(BLACK,WHITE)
+  levelFile = open(gameSelected + "/levels/" + level + ".vtflevel", "r")
+  levelFileContents = levelFile.readlines()
+  
 # Check for Void Engine Games
 currentDirectory = os.listdir() # This is an array of everything in the root Void Engine folder
 for counter in range(len(currentDirectory)): # This is a loop that finds the Void Engine games
@@ -56,8 +66,11 @@ while running: # This is the main loop
   mousex,mousey = pygame.mouse.get_pos()
   mouse1,mouse3,mouse2 = pygame.mouse.get_pressed(num_buttons=3)
   for event in pygame.event.get(): # Checks for pygame events
-    if pygame.event == pygame.QUIT:
+    if event.type == pygame.QUIT:
       running = False
+    if event.type == pygame.KEYDOWN:
+      if event.key == pygame.K_RETURN and chapterSelectionScreen == True:
+        loadLevel(chapterFileContents[1][:-1], gameInfoContents)
 
   if launcher == True:
     screen.fill(GREY)
@@ -75,8 +88,8 @@ while running: # This is the main loop
   
     # This displays all the selected games info and buttons and stuff
     if gameSelected != "":
+      pygame.draw.rect(screen, DGREY, (235,5,400,465))
       if os.path.exists(gameSelected + "/banner.png"):
-        pygame.draw.rect(screen, DGREY, (235,5,400,465))
         screen.blit(pygame.image.load(gameSelected + "/banner.png"), (240, 10))
       pygame.draw.rect(screen, GREEN, (240,255,390,50))
       screen.blit(bigfont.render("PLAY", True, WHITE), (370,250))
@@ -84,6 +97,8 @@ while running: # This is the main loop
         launcher = False
         startup = True
   elif startup == True:
+    chapterSelectionScreen = False
+    selectedChapter = 1
     pygame.display.set_caption("Void Engine - " + gameSelectedName)
     loading(BLACK, WHITE)
     if os.path.exists(gameSelected + "/videos/opening.mp4"):
@@ -100,16 +115,27 @@ while running: # This is the main loop
     if startingUp == True:
       pygame.time.delay(1000)
     startingUp = False
+    
     screen.fill(GREY)
     screen.blit(bigfont.render(gameSelectedName, True, WHITE), (10,10))
     screen.blit(subfont.render("by " + gameSelectedDev, True, WHITE), (10,60))
+    
     if mousex > 10 and mousex < 110 and mousey > 350 and mousey < 400:
       screen.blit(bigfont.render("Play", True, LGREY), (10,350))
+      if mouse1 == True:
+        chapterSelectionScreen = True
     else:
       screen.blit(bigfont.render("Play", True, WHITE), (10,350))
     if mousex > 10 and mousex < 110 and mousey > 410 and mousey < 460:
       screen.blit(bigfont.render("Quit", True, LGREY), (10,410))
+      if mouse1 == True:
+        running = False
     else:
       screen.blit(bigfont.render("Quit", True, WHITE), (10,410))
+    
+    if chapterSelectionScreen == True:
+      chapterFile = open(gameSelected + "/chapter" + str(selectedChapter) + ".txt")
+      chapterFileContents = chapterFile.readlines()
+      screen.blit(subfont.render("Chapter " + str(selectedChapter) + ": " + chapterFileContents[0][:-1], True, WHITE), (10,100))
   pygame.display.update()
 pygame.quit()
