@@ -2,38 +2,37 @@ import pygame
 
 pygame.init()
 pygame.font.init()
-screen = pygame.display.set_mode((640,640))
+screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
 clock = pygame.time.Clock()
 running = True
 mainMenuActive = True
 newGameActive = False
 
-MAINMENULEFT = pygame.image.load("shared/voidmainmenuleft.png")
-MAINMENURIGHT = pygame.image.load("shared/voidmainmenuright.png")
-NEWGAMEUI = pygame.image.load("shared/voidnewgame.png")
+NAMESMILE = pygame.font.SysFont('Name Smile', 30)
+WHITE = (255,255,255)
+PURPLE = (196,0,252)
+GREY = (50,50,50)
 
-def main_menu(MAINMENULEFT,MAINMENURIGHT):
-    screen.blit(MAINMENULEFT, (0,0))
-    screen.blit(MAINMENURIGHT, (366,0))
-
-def new_game(NEWGAMEUI):
-    screen.blit(NEWGAMEUI, (0,0))
+def graphics():
+	screen.fill(WHITE)
+	for counter in range(int(round(screenSizeW/10)*10)):
+		pygame.draw.line(screen, GREY, (counter*40,0), (counter*40, screenSizeH))
+	for counter in range(int(round(screenSizeH/10)*10)):
+		pygame.draw.line(screen, GREY, (0,counter*40+30), (screenSizeW, counter*40+30))
+	pygame.draw.rect(screen, PURPLE, (0,0,screenSizeW,30))
+	screen.blit(NAMESMILE.render("File", True, WHITE), (0,0))
+	screen.blit(NAMESMILE.render("Tools", True, WHITE), (100,0))
+	screen.blit(NAMESMILE.render("Help", True, WHITE), (240,0))
 
 while running:
-    clock.tick(60)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-    mouseX,mouseY = pygame.mouse.get_pos()
-    mouse1,mouse3,mouse2 = pygame.mouse.get_pressed(num_buttons=3)
+	clock.tick(60)
+	for event in pygame.event.get():
+		if event.type == pygame.QUIT:
+			running = False
+	mouseX,mouseY = pygame.mouse.get_pos()
+	mouse1,mouse3,mouse2 = pygame.mouse.get_pressed(num_buttons=3)
+	screenSizeW,screenSizeH = screen.get_size()
 
-    if mainMenuActive and newGameActive == False:
-        main_menu(MAINMENULEFT,MAINMENURIGHT)
-        if mouse1 and mouseX > 60 and mouseY > 435 and mouseX < 314 and mouseY < 465:
-            newGameActive = True
-    
-    if newGameActive:
-        new_game(NEWGAMEUI)
-
-    pygame.display.update()
+	graphics()
+	pygame.display.update()
 pygame.quit()
