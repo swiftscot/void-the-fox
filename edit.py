@@ -14,15 +14,19 @@ spriteWindowX = 40
 spriteWindowY = screenSizeH-520
 spriteWindow = True
 spriteWindowMoving = False
+sprites = []
 entityWindowX = 400
 entityWindowY = screenSizeH-520
 entityWindow = True
 entityWindowMoving = False
 newGameWindow = False
 newGame = ""
+loadGameWindow = False
 gameLoaded = ""
 entick = 0
 sptick = 0
+cameraX = 0
+cameraY = 0
 
 NAMESMILE = pygame.font.Font('shared/Name Smile.otf', 30)
 WHITE = (255,255,255)
@@ -48,6 +52,19 @@ def graphics():
 		screen.blit(NAMESMILE.render("X", True, WHITE), (spriteWindowX+291,spriteWindowY+1))
 		pygame.draw.rect(screen, LBLUE, (spriteWindowX+180,spriteWindowY,110,30))
 		screen.blit(NAMESMILE.render("Move", True, WHITE), (spriteWindowX+182,spriteWindowY+1))
+		for counter in range(len(sprites)):
+			if counter <= 6:
+				screen.blit(pygame.image.load(gameLoaded + "/sprites/" + sprites[counter]), (spriteWindowX+5+counter*40,spriteWindowY+35))
+			elif counter >= 6 and counter <= 13:
+				screen.blit(pygame.image.load(gameLoaded + "/sprites/" + sprites[counter]), (spriteWindowX+5+(counter-7)*40,spriteWindowY+75))
+			elif counter >= 13 and counter <= 20:
+				screen.blit(pygame.image.load(gameLoaded + "/sprites/" + sprites[counter]), (spriteWindowX+5+(counter-14)*40,spriteWindowY+115))
+			elif counter >= 20 and counter <= 27:
+				screen.blit(pygame.image.load(gameLoaded + "/sprites/" + sprites[counter]), (spriteWindowX+5+(counter-21)*40,spriteWindowY+155))
+			elif counter >= 27 and counter <= 34:
+				screen.blit(pygame.image.load(gameLoaded + "/sprites/" + sprites[counter]), (spriteWindowX+5+(counter-28)*40,spriteWindowY+195))
+			elif counter >= 34 and counter <= 41:
+				screen.blit(pygame.image.load(gameLoaded + "/sprites/" + sprites[counter]), (spriteWindowX+5+(counter-35)*40,spriteWindowY+235))
 	if entityWindow:
 		pygame.draw.rect(screen, PURPLE, (entityWindowX, entityWindowY, 320, 30))
 		pygame.draw.rect(screen, LPURPLE, (entityWindowX, entityWindowY+30, 320, 450))
@@ -62,7 +79,12 @@ def graphics():
 		pygame.draw.rect(screen, DPURPLE, (45, 105, 470, 30))
 		screen.blit(NAMESMILE.render("New Game", True, WHITE), (40,71))
 		screen.blit(NAMESMILE.render(newGame, True, WHITE), (45,106))
-
+	if loadGameWindow:
+		pygame.draw.rect(screen, PURPLE, (40, 70, 480, 30))
+		pygame.draw.rect(screen, LPURPLE, (40, 100, 480, 40))
+		pygame.draw.rect(screen, DPURPLE, (45, 105, 470, 30))
+		screen.blit(NAMESMILE.render("Load Game", True, WHITE), (40,71))
+		screen.blit(NAMESMILE.render(gameLoaded, True, WHITE), (45,106))
 	pygame.draw.rect(screen, PURPLE, (0,0,screenSizeW,30))
 	screen.blit(NAMESMILE.render("File", True, WHITE), (0,0))
 	screen.blit(NAMESMILE.render("Tools", True, WHITE), (100,0))
@@ -83,7 +105,7 @@ def graphics():
 	if gameLoaded == "":
 		screen.blit(NAMESMILE.render("You must first load a game. (File > New Game or File > Load Game)", True, GREEN), (240,0))
 
-def input(mouseX,mouseY,mouse1,mouse2):
+def input(mouseX,mouseY,mouse1,mouse2,keys):
 	global fileDropdown
 	global toolsDropdown
 	global running
@@ -98,8 +120,11 @@ def input(mouseX,mouseY,mouse1,mouse2):
 	global newGame
 	global newGameWindow
 	global gameLoaded
+	global loadGameWindow
 	global sptick
 	global entick
+	global cameraX
+	global cameraY
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			running = False
@@ -113,11 +138,41 @@ def input(mouseX,mouseY,mouse1,mouse2):
 				os.mkdir(newGame + "/sfx")
 				os.mkdir(newGame + "/sprites")
 				os.mkdir(newGame + "/videos")
+				charFile = open(newGame + "/characters.void", "x")
+				gamemodesFile = open(newGame + "/gamemodes.void", "x")
+				infoFile = open(newGame + "/info.void", "x")
+				weaponsFile = open(newGame + "/weapons.void", "x")
+				charFile.close()
+				gamemodesFile.close()
+				infoFile.close()
+				weaponsFile.close()
 				gameLoaded = newGame
+				loading()
 			elif newGameWindow and event.key == pygame.K_BACKSPACE:
 				newGame = newGame[:-1]
+			elif newGameWindow and event.key == pygame.K_ESCAPE:
+				newGame = ""
+				newGameWindow = False
 			elif newGameWindow:
 				newGame += event.unicode
+			if loadGameWindow and event.key == pygame.K_RETURN:
+				loadGameWindow = False
+				loading()
+			elif loadGameWindow and event.key == pygame.K_BACKSPACE:
+				gameLoaded = gameLoaded[:-1]
+			elif loadGameWindow and event.key == pygame.K_ESCAPE:
+				gameLoaded = ""
+				loadGameWindow = False
+			elif loadGameWindow:
+				gameLoaded += event.unicode
+	if keys[pygame.K_LEFT]:
+		cameraX = cameraX-40
+	if keys[pygame.K_RIGHT]:
+		cameraX = cameraX+40
+	if keys[pygame.K_UP]:
+		cameraY = cameraY-40
+	if keys[pygame.K_DOWN]:
+		cameraY = cameraY+40
 	if spriteWindow:
 		if mouseX > spriteWindowX+290 and mouseX < spriteWindowX+320 and mouseY > spriteWindowY and mouseY < spriteWindowY+30 and mouse1:
 			spriteWindow = False
@@ -152,6 +207,13 @@ def input(mouseX,mouseY,mouse1,mouse2):
 			fileDropdown = False
 		if mouseY > 150 and mouseY < 180 and mouseX > 0 and mouseX < 240 and mouse1:
 			newGameWindow = True
+			loadGameWindow = False
+		if mouseY > 150 and mouseY < 180 and mouseX > 0 and mouseX < 240 and mouse1:
+			newGameWindow = True
+			loadGameWindow = False
+		if mouseY > 180 and mouseY < 210 and mouseX > 0 and mouseX < 240 and mouse1:
+			newGameWindow = False
+			loadGameWindow = True
 		if mouseY > 240 and mouseY < 270 and mouseX > 0 and mouseX < 240 and mouse1:
 			running = False
 	if mouseX > 100 and mouseX < 240 and mouseY < 30:
@@ -169,12 +231,17 @@ def input(mouseX,mouseY,mouse1,mouse2):
 			entityWindowX = 400
 			entityWindowY = screenSizeH-520
 
+def loading():
+	global sprites
+	sprites = os.listdir(gameLoaded + "/sprites/")
+	
 while running:
 	clock.tick(60)
 	mouseX,mouseY = pygame.mouse.get_pos()
 	mouse1,mouse3,mouse2 = pygame.mouse.get_pressed(num_buttons=3)
+	keys = pygame.key.get_pressed()
 
 	graphics()
-	input(mouseX,mouseY,mouse1,mouse2)
+	input(mouseX,mouseY,mouse1,mouse2,keys)
 	pygame.display.update()
 pygame.quit()
