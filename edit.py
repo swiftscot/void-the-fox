@@ -1,6 +1,7 @@
 # Imports
 import pygame
 import datetime
+import os
 
 # Pygame Initialization
 pygame.init()
@@ -16,11 +17,27 @@ tick = 0
 seconds = 0
 minutes = 0
 hours = 0
+homepageWindow = True
+newGameWindow = False
+textInput = ""
+textInputActive = False
+
+# Functions
+def close_all_windows():
+    global homepageWindow
+    global newGameWindow
+    global textInput
+    global textInputActive
+    homepageWindow = False
+    newGameWindow = False
+    textInput = ""
+    textInputActive = True
 
 # Pre-defined Variables - Colours
 PURPLE = (210,0,252)
 DPURPLE = (168,0,235)
 WHITE = (255,255,255)
+LGREY = (200,200,200)
 
 # Pre-defined Variables - Fonts and Text
 LOGOFONT = pygame.font.Font("shared/Ubuntu-Bold.ttf", 50)
@@ -70,22 +87,77 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.KEYDOWN and textInputActive == True:
+            if event.key == pygame.K_RETURN:
+                textInputActive = False
+            elif event.key == pygame.K_BACKSPACE:
+                textInput = textInput[:-1]
+            else:
+                textInput = textInput + event.unicode
+
 
     # Inputs
     windowSizeWidth,windowSizeHeight = window.get_size()
+    mouseX,mouseY = pygame.mouse.get_pos()
+    mouse1,mouse3,mouse2 = pygame.mouse.get_pressed(num_buttons=3)
 
     # Display and Graphics - Home
-    window.fill((DPURPLE))
-    pygame.draw.rect(window, PURPLE, (0,0,300,windowSizeHeight))
-    window.blit(LOGOTEXT, (305,5))
-    window.blit(SPLASH, (305,60))
-    for counter in range(len(CHECKLIST)):
-        window.blit(FONT.render(CHECKLIST[counter], True, WHITE), (305,100+counter*20))
+    if homepageWindow:
+        window.fill(DPURPLE)
+        window.blit(LOGOTEXT, (305,5))
+        window.blit(SPLASH, (305,60))
+        for counter in range(len(CHECKLIST)):
+            window.blit(FONT.render(CHECKLIST[counter], True, WHITE), (305,100+counter*20))
+    elif newGameWindow:
+        window.fill(DPURPLE)
+        window.blit(LOGOFONT.render("New Game", True, WHITE), (305,5))
+        window.blit(FONT.render("Please enter the new game's internal name: " + textInput, True, WHITE), (305,55))
+        for counter in range(len(status)):
+            window.blit(FONT.render(status[counter], True, WHITE), (305,75+counter*20))
+        if textInputActive == False and newGameCreated == False:
+            status.append("Starting " + textInput + " creation process...")
+            os.mkdir(textInput)
+            status.append("Created " + textInput + " directory.")
+            os.mkdir(textInput + "/backgrounds")
+            status.append("Created " + textInput + "/backgrounds directory.")
+            os.mkdir(textInput + "/chapters")
+            status.append("Created " + textInput + "/chapters directory.")
+            os.mkdir(textInput + "/gamemodes")
+            status.append("Created " + textInput + "/gamemodes directory.")
+            os.mkdir(textInput + "/levels")
+            status.append("Created " + textInput + "/levels directory.")
+            os.mkdir(textInput + "/music")
+            status.append("Created " + textInput + "/music directory.")
+            os.mkdir(textInput + "/sprites")
+            status.append("Created " + textInput + "/sprites directory.")
+            os.mkdir(textInput + "/weapons")
+            status.append("Created " + textInput + "/weapons directory.")
+            gameInfo = open(textInput + "/gameinfo.ve", "x")
+            gameInfo.close()
+            status.append("Created " + textInput + "/gameinfo.ve file.")
+            newGameCreated = True
+            status.append("Done.")
+
 
     # Display and Graphics - Sidebar
-    window.blit(FONT.render("Homepage", True, WHITE), (5,5))
+    pygame.draw.rect(window, PURPLE, (0,0,300,windowSizeHeight))
+    if mouseX > 5 and mouseX < 105 and mouseY > 5 and mouseY < 25:
+        window.blit(FONT.render("Homepage", True, LGREY), (5,5))
+        if mouse1:
+            close_all_windows()
+            homepageWindow = True
+    else:
+        window.blit(FONT.render("Homepage", True, WHITE), (5,5))
 
-    window.blit(FONT.render("New Game", True, WHITE), (5,45))
+    if mouseX > 5 and mouseX < 105 and mouseY > 45 and mouseY < 65:
+        window.blit(FONT.render("New Game", True, LGREY), (5,45))
+        if mouse1:
+            close_all_windows()
+            newGameWindow = True
+            newGameCreated = False
+            status = []
+    else:
+        window.blit(FONT.render("New Game", True, WHITE), (5,45))
     window.blit(FONT.render("Edit Game", True, WHITE), (5,65))
     window.blit(FONT.render("Load Game", True, WHITE), (5,85))
 
